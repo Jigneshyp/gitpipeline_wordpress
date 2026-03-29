@@ -1,1 +1,1 @@
-# gitpipeline_wordpress
+# gitpipeline_wordpress_githubaction
