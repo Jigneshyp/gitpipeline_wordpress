@@ -3,7 +3,7 @@ name: Deploy via SSM on EC2
 on:
   push:
     branches:
-      - prod
+      - main
 
 jobs:
   deploy:
