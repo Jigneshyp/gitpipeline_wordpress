@@ -1,0 +1,45 @@
+name: Deploy via SSM on EC2
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Run deploy script on EC2 using SSM
+        run: |
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+            --parameters commands=["sudo -u ubuntu bash ${{ secrets.DEPLOY_SCRIPT_PATH }}"] \
+            --region ${{ secrets.AWS_REGION }} \
+            --query "Command.CommandId" --output text > command_id.txt
+
+          echo "SSM command sent. Command ID:"
+          cat command_id.txt
+
+          # Wait for the command to finish
+          aws ssm wait command-executed \
+            --command-id $(cat command_id.txt) \
+            --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
+            --region ${{ secrets.AWS_REGION }}
+
+          # Optionally, fetch the command output:
+          aws ssm get-command-invocation \
+            --command-id $(cat command_id.txt) \
+            --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
+            --region ${{ secrets.AWS_REGION }}
