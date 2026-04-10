@@ -20,7 +20,7 @@ jobs:
           #role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           role-to-assume: arn:aws:iam::180217099948:role/github_action
           #aws-region: ${{ secrets.AWS_REGION }}
-          aws-region: ao-south-1
+          aws-region: ap-south-1
 
       - name: Run deploy script on EC2 using SSM
         run: |
